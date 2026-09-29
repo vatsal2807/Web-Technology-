@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Portal - Ticket Generated</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .success-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 50px;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .success-card h2 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .success-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .ticket-box {
+            background: #f9fbfd;
+            border: 1px dashed #2a5298;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .ticket-row {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .ticket-row strong {
+            color: #444;
+            display: inline-block;
+            width: 130px;
+        }
+
+        .ticket-id {
+            color: #2a5298;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #2a5298;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1e3c72;
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="success-card">
+        <div class="success-icon">&#10004;</div>
+        <h2>Complaint Registered Successfully!</h2>
+        <p>Your issue has been successfully logged into the municipal grid system.</p>
+
+        <div class="ticket-box" id="ticketBox">
+            <!-- Dynamically populated via JavaScript -->
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="window.print()">Print Ticket</button>
+            <a href="home.html" class="btn btn-primary">File Another Complaint</a>
+        </div>
+    </div>
+
+    <script>
+        // Security check: ensure user is logged in
+        if (sessionStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = "index.html";
+        }
+
+        // Pull the latest complaint details stored from the form page
+        const dataJson = localStorage.getItem("latestComplaint");
+        const ticketBox = document.getElementById('ticketBox');
+
+        if (!dataJson) {
+            ticketBox.innerHTML = "<p>No active complaint ticket found. Please file a complaint first.</p>";
+        } else {
+            const complaint = JSON.parse(dataJson);
+            
+            let imageHTML = "";
+            if (complaint.image) {
+                imageHTML = `
+                    <div class="image-preview">
+                        <strong>Attached Proof:</strong><br>
+                        <img src="${complaint.image}" alt="Complaint Evidence">
+                    </div>
+                `;
+            }
+
+            ticketBox.innerHTML = `
+                <div class="ticket-row"><strong>Tracking ID:</strong> <span class="ticket-id">${complaint.trackingId}</span></div>
+                <div class="ticket-row"><strong>Category:</strong> ${complaint.topic}</div>
+                <div class="ticket-row"><strong>Citizen Name:</strong> ${complaint.name}</div>
+                <div class="ticket-row"><strong>Phone:</strong> ${complaint.phone}</div>
+                <div class="ticket-row"><strong>Location:</strong> ${complaint.location}</div>
+                <div class="ticket-row"><strong>Date Filed:</strong> ${complaint.date}</div>
+                <div class="ticket-row"><strong>Description:</strong> ${complaint.description}</div>
+                ${imageHTML}
+            `;
+        }
+    </script>
+</body>
+</html>

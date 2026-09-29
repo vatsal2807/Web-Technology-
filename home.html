@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Portal - Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #1e3c72;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 22px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-link {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn {
+            background-color: #d9534f;
+            border-color: #d9534f;
+        }
+
+        .logout-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .welcome-banner {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .welcome-banner h2 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+        }
+
+        .welcome-banner p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .search-container {
+            margin-bottom: 30px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: border-color 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: #1e3c72;
+        }
+
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .topic-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid #2a5298;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .topic-card h3 {
+            font-size: 18px;
+            color: #2a5298;
+            margin-bottom: 8px;
+        }
+
+        .topic-card p {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #888;
+            grid-column: 1 / -1;
+            padding: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section with History & Logout Links -->
+    <header>
+        <h1>Smart City Portal</h1>
+        <div class="header-nav">
+            <a href="history.html" class="nav-link">View Complaints History</a>
+            <button class="nav-link logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="container">
+        
+        <div class="welcome-banner">
+            <h2>Welcome, Administrator</h2>
+            <p>Search or select a civic topic below to file a new citizen complaint.</p>
+        </div>
+
+        <!-- Live Search Bar -->
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search complaint topics (e.g., Potholes, Water, Garbage)...">
+        </div>
+
+        <!-- Topics Grid -->
+        <div class="topics-grid" id="topicsGrid">
+            <div class="topic-card" data-topic="Potholes & Roads">
+                <h3>Potholes & Roads</h3>
+                <p>Report damaged asphalt, road cracks, and deep potholes.</p>
+            </div>
+            <div class="topic-card" data-topic="Street Lighting">
+                <h3>Street Lighting</h3>
+                <p>Report broken streetlights, flickering poles, or dark zones.</p>
+            </div>
+            <div class="topic-card" data-topic="Garbage & Sanitation">
+                <h3>Garbage & Sanitation</h3>
+                <p>Report uncollected waste, overflowing bins, or illegal dumping.</p>
+            </div>
+            <div class="topic-card" data-topic="Water Supply">
+                <h3>Water Supply</h3>
+                <p>Report pipe leakage, low water pressure, or contaminated supply.</p>
+            </div>
+            <div class="topic-card" data-topic="Drainage & Sewage">
+                <h3>Drainage & Sewage</h3>
+                <p>Report blocked drains, overflowing manholes, or stagnant water.</p>
+            </div>
+            <div class="topic-card" data-topic="Public Parks">
+                <h3>Public Parks & Greenery</h3>
+                <p>Report damaged park equipment, unmaintained lawns, or fallen trees.</p>
+            </div>
+            <div class="topic-card" data-topic="Stray Animals">
+                <h3>Stray Animals</h3>
+                <p>Report nuisance or safety issues involving stray animals.</p>
+            </div>
+            <div class="topic-card" data-topic="Traffic Signals">
+                <h3>Traffic Signals</h3>
+                <p>Report malfunctioning traffic lights or missing road signs.</p>
+            </div>
+            <div class="no-results" id="noResults">No matching complaint topics found.</div>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. Security Access Guard Check
+        if (sessionStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = "index.html";
+        }
+
+        // 2. Logout Handler
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            sessionStorage.removeItem("isLoggedIn");
+            window.location.href = "index.html";
+        });
+
+        // 3. Live Search Filtering Logic
+        const searchInput = document.getElementById('searchInput');
+        const topicCards = document.querySelectorAll('.topic-card');
+        const noResults = document.getElementById('noResults');
+
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            topicCards.forEach(card => {
+                const topicTitle = card.querySelector('h3').textContent.toLowerCase();
+                const topicDesc = card.querySelector('p').textContent.toLowerCase();
+
+                if (topicTitle.includes(query) || topicDesc.includes(query)) {
+                    card.style.display = "block";
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            if (visibleCount === 0) {
+                noResults.style.display = "block";
+            } else {
+                noResults.style.display = "none";
+            }
+        });
+
+        // 4. Topic Selection & Redirection
+        topicCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const selectedTopic = this.getAttribute('data-topic');
+                localStorage.setItem("selectedTopic", selectedTopic);
+                window.location.href = "complaint.html";
+            });
+        });
+    </script>
+
+</body>
+</html>

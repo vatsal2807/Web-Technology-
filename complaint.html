@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Portal - File Complaint</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #1e3c72;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 22px;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .form-card h2 {
+            color: #1e3c72;
+            margin-bottom: 5px;
+        }
+
+        .selected-topic-badge {
+            display: inline-block;
+            background-color: #e3ebf7;
+            color: #1e3c72;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #1e3c72;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 120px;
+        }
+
+        .error-hint {
+            color: #d9534f;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #1e3c72;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Smart City Portal</h1>
+        <a href="home.html" class="back-btn">&larr; Back to Search</a>
+    </header>
+
+    <div class="container">
+        <div class="form-card">
+            <h2>Submit Civic Complaint</h2>
+            <div class="selected-topic-badge" id="topicBadge">Category: Loading...</div>
+
+            <form id="complaintForm">
+                <div class="form-group">
+                    <label for="citizenName">Your Full Name</label>
+                    <input type="text" id="citizenName" placeholder="E.g., John Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="citizenPhone">Phone Number (10 digits)</label>
+                    <input type="tel" id="citizenPhone" placeholder="E.g., 9876543210" maxlength="10" pattern="[0-9]{10}" title="Please enter exactly 10 digits" required>
+                    <div class="error-hint" id="phoneError">Phone number must be exactly 10 numeric digits.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location / Ward / Street Address</label>
+                    <input type="text" id="location" placeholder="E.g., Sector 4, Main Street, Near Central Park" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Detailed Description of Issue</label>
+                    <textarea id="description" placeholder="Provide clear details about the issue..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="evidence">Upload Photo Proof (Optional)</label>
+                    <input type="file" id="evidence" accept="image/*">
+                </div>
+
+                <button type="submit" class="submit-btn">Submit Complaint Ticket</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 1. Security Access Check
+        if (sessionStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = "index.html";
+        }
+
+        // 2. Retrieve and render selected topic from localStorage
+        const selectedTopic = localStorage.getItem("selectedTopic");
+        const topicBadge = document.getElementById('topicBadge');
+        
+        if (!selectedTopic) {
+            window.location.href = "home.html";
+        } else {
+            topicBadge.textContent = "Category: " + selectedTopic;
+        }
+
+        // 3. Form Submission Handler
+        const complaintForm = document.getElementById('complaintForm');
+        const phoneInput = document.getElementById('citizenPhone');
+        const phoneError = document.getElementById('phoneError');
+
+        complaintForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const phoneValue = phoneInput.value.trim();
+            const phoneRegex = /^[0-9]{10}$/;
+
+            // Strict 10-digit validation check
+            if (!phoneRegex.test(phoneValue)) {
+                phoneError.style.display = "block";
+                phoneInput.focus();
+                return; 
+            } else {
+                phoneError.style.display = "none";
+            }
+
+            const name = document.getElementById('citizenName').value;
+            const location = document.getElementById('location').value;
+            const description = document.getElementById('description').value;
+            const fileInput = document.getElementById('evidence');
+
+            // Generate Unique Tracking ID & Date
+            const trackingId = "SC-" + Math.floor(100000 + Math.random() * 900000);
+            const currentDate = new Date().toLocaleDateString();
+
+            // Handle image processing if attached
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    saveAndRedirect({
+                        trackingId,
+                        topic: selectedTopic,
+                        name,
+                        phone: phoneValue,
+                        location,
+                        description,
+                        date: currentDate,
+                        image: uploadEvent.target.result
+                    });
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveAndRedirect({
+                    trackingId,
+                    topic: selectedTopic,
+                    name,
+                    phone: phoneValue,
+                    location,
+                    description,
+                    date: currentDate,
+                    image: null
+                });
+            }
+        });
+
+        // 4. Save to Master Array & Redirect to Success Page
+        function saveAndRedirect(complaintData) {
+            // Assign default initial status for admin tracking
+            complaintData.status = "Pending";
+
+            // Retrieve existing master list array or initialize a new one
+            let allComplaints = JSON.parse(localStorage.getItem("allComplaints")) || [];
+            
+            // Push the new complaint to the beginning of the list
+            allComplaints.unshift(complaintData);
+            
+            // Save back to localStorage
+            localStorage.setItem("allComplaints", JSON.stringify(allComplaints));
+            localStorage.setItem("latestComplaint", JSON.stringify(complaintData));
+            
+            // Route to success confirmation screen
+            window.location.href = "success.html";
+        }
+    </script>
+</body>
+</html>

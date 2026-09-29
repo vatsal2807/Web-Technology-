@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart City Portal - Complaints History & Management</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: #1e3c72;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 22px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-nav:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .dashboard-header h2 {
+            color: #1e3c72;
+        }
+
+        .complaints-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .complaint-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid #2a5298;
+            position: relative;
+        }
+
+        .complaint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .ticket-id {
+            font-weight: bold;
+            color: #2a5298;
+            font-size: 16px;
+        }
+
+        .complaint-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .complaint-details div strong {
+            color: #555;
+        }
+
+        .description-box {
+            background: #f9fbfd;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .status-select {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            border: 1px solid #ccc;
+        }
+
+        .status-Pending { background-color: #fff3cd; color: #856404; }
+        .status-InProgress { background-color: #cce5ff; color: #004085; }
+        .status-Resolved { background-color: #d4edda; color: #155724; }
+
+        .evidence-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-top: 5px;
+        }
+
+        .no-data {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            color: #777;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Smart City Portal - Admin Panel</h1>
+        <div class="nav-buttons">
+            <a href="home.html" class="btn-nav">&larr; Dashboard</a>
+            <a href="index.html" class="btn-nav" onclick="sessionStorage.clear()">Logout</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h2>All Submitted Complaints</h2>
+            <button class="btn-nav" style="background-color: #d9534f; border-color: #d9534f;" id="clearAllBtn">Clear History</button>
+        </div>
+
+        <div class="complaints-grid" id="complaintsGrid">
+            <!-- Dynamically populated via JS -->
+        </div>
+    </div>
+
+    <script>
+        // Security check
+        if (sessionStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = "index.html";
+        }
+
+        const complaintsGrid = document.getElementById('complaintsGrid');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        // Function to load and render complaints from localStorage
+        function loadComplaints() {
+            let complaints = JSON.parse(localStorage.getItem("allComplaints")) || [];
+
+            // Backward compatibility fallback: if "allComplaints" doesn't exist yet 
+            // but "latestComplaint" does, migrate it into the array format.
+            if (complaints.length === 0 && localStorage.getItem("latestComplaint")) {
+                const singleLatest = JSON.parse(localStorage.getItem("latestComplaint"));
+                singleLatest.status = singleLatest.status || "Pending";
+                complaints.push(singleLatest);
+                localStorage.setItem("allComplaints", JSON.stringify(complaints));
+            }
+
+            if (complaints.length === 0) {
+                complaintsGrid.innerHTML = `<div class="no-data">No complaint history found. File a complaint to see it listed here!</div>`;
+                return;
+            }
+
+            complaintsGrid.innerHTML = "";
+
+            complaints.forEach((item, index) => {
+                // Default status if not set
+                const currentStatus = item.status || "Pending";
+
+                let imageSection = "";
+                if (item.image) {
+                    imageSection = `
+                        <div class="evidence-preview">
+                            <strong>Proof:</strong><br>
+                            <a href="${item.image}" target="_blank"><img src="${item.image}" alt="Evidence"></a>
+                        </div>
+                    `;
+                }
+
+                const card = document.createElement('div');
+                card.className = `complaint-card`;
+                card.innerHTML = `
+                    <div class="complaint-header">
+                        <span class="ticket-id">${item.trackingId}</span>
+                        <span style="font-size: 13px; color: #666;">Filed on: ${item.date}</span>
+                    </div>
+                    <div class="complaint-details">
+                        <div><strong>Category:</strong> ${item.topic}</div>
+                        <div><strong>Citizen:</strong> ${item.name} (${item.phone})</div>
+                        <div style="grid-column: 1 / -1;"><strong>Location:</strong> ${item.location}</div>
+                    </div>
+                    <div class="description-box">
+                        <strong>Description:</strong> ${item.description}
+                    </div>
+                    ${imageSection}
+                    <div class="card-footer">
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; margin-right: 8px;">Status:</label>
+                            <select class="status-select status-${currentStatus}" data-index="${index}">
+                                <option value="Pending" ${currentStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="InProgress" ${currentStatus === 'InProgress' ? 'selected' : ''}>In Progress</option>
+                                <option value="Resolved" ${currentStatus === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                            </select>
+                        </div>
+                        <span style="font-size: 12px; color: #888;">ID Index: #${index + 1}</span>
+                    </div>
+                `;
+                complaintsGrid.appendChild(card);
+            });
+
+            // Attach event listeners to all status dropdowns
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const idx = this.getAttribute('data-index');
+                    const newStatus = this.value;
+
+                    // Update class styling immediately
+                    this.className = `status-select status-${newStatus}`;
+
+                    // Update localStorage array
+                    let storedComplaints = JSON.parse(localStorage.getItem("allComplaints")) || [];
+                    if (storedComplaints[idx]) {
+                        storedComplaints[idx].status = newStatus;
+                        localStorage.setItem("allComplaints", JSON.stringify(storedComplaints));
+                    }
+                });
+            });
+        }
+
+        // Make sure `complaint.html` pushes to the array "allComplaints" instead of just "latestComplaint"
+        // (We will update the save mechanism momentarily, or you can check below)
+
+        clearAllBtn.addEventListener('click', function() {
+            if (confirm("Are you sure you want to clear all complaint history?")) {
+                localStorage.removeItem("allComplaints");
+                localStorage.removeItem("latestComplaint");
+                loadComplaints();
+            }
+        });
+
+        // Initial load
+        loadComplaints();
+    </script>
+</body>
+</html>
